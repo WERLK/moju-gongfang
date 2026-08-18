@@ -1,0 +1,64 @@
+{
+  "name": "ai-comic-studio",
+  "version": "1.0.0",
+  "description": "AI 漫剧工坊 - 前后端分离的智能漫画制作平台，支持 PWA/iOS/桌面多端数据互通",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "electron": "electron .",
+    "desktop": "electron .",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac --arm64 --x64",
+    "dist:all": "electron-builder --win --mac"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "sql.js": "^1.11.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.moju.studio",
+    "productName": "漫剧工坊",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "server.js",
+      "server/**",
+      "js/**",
+      "css/**",
+      "assets/**",
+      "index.html",
+      "manifest.json",
+      "sw.js",
+      "package.json",
+      "node_modules/**"
+    ],
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ]
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "artifactName": "漫剧工坊-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "漫剧工坊"
+    }
+  }
+}
