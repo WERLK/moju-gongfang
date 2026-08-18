@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<title>AI 漫剧工坊 · 墨与纸故事工坊</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="description" content="用墨与纸，讲一个故事。AI 辅助的漫画/漫剧创作平台，多端数据互通。">
+<!-- iOS 安装/全屏 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="漫剧工坊">
+<link rel="apple-touch-icon" href="/assets/app-icon.jpg">
+<link rel="icon" href="/assets/app-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+<!-- ============ 顶部工具栏 ============ -->
+<header class="topbar">
+  <div class="brand" data-nav="#/gallery">
+    <div class="logo">墨</div>
+    <div class="brand-text">
+      <div class="brand-title">AI 漫剧工坊</div>
+      <div class="brand-sub">墨与纸 · 故事工坊</div>
+    </div>
+  </div>
+
+  <nav class="topnav">
+    <a class="nav-link" data-nav="#/gallery" href="#/gallery">广场</a>
+    <a class="nav-link" data-nav="#/editor" href="#/editor">创作</a>
+    <a class="nav-link" data-nav="#/profile" href="#/profile">我的</a>
+  </nav>
+
+  <div class="project-title-bar" id="projectTitleBar" hidden>未命名作品（未保存）</div>
+
+  <div class="top-actions">
+    <button class="btn btn-ghost" id="btnNewProject" hidden>新建作品</button>
+    <button class="btn btn-ghost" id="btnUpload" hidden>上传文件</button>
+    <input type="file" id="fileInput" multiple hidden>
+    <button class="btn btn-ghost" id="btnSave" hidden>保存</button>
+    <button class="btn btn-primary" id="btnExport" hidden>导出作品</button>
+    <div class="account-area" id="accountArea"></div>
+  </div>
+</header>
+
+<!-- ============ 视图：广场 ============ -->
+<section class="view view-gallery" id="view-gallery">
+  <div class="gallery-hero">
+    <div class="gallery-hero-inner">
+      <span class="hero-eyebrow">漫剧广场</span>
+      <h1>用墨与纸，<br>讲一个故事</h1>
+      <p>这里是创作者发布作品的地方</p>
+      <div class="hero-cta">
+        <button class="btn btn-ink" id="heroCreate">开始创作</button>
+        <a class="hero-scroll-hint" data-nav="#/gallery" href="#/gallery">浏览作品 ↓</a>
+      </div>
+    </div>
+  </div>
+  <div class="gallery-controls">
+    <div class="sort-tabs">
+      <button class="sort-tab active" data-sort="new">最新</button>
+      <button class="sort-tab" data-sort="hot">热门</button>
+    </div>
+    <button class="btn btn-primary" id="btnCreateWork">开始创作</button>
+  </div>
+  <div class="gallery-scroll" id="galleryScroll">
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+</section>
+
+<!-- ============ 视图：编辑器 ============ -->
+<section class="view view-editor" id="view-editor" hidden>
+  <main class="layout">
+    <!-- 左栏：场景列表 -->
+    <aside class="sidebar sidebar-left">
+      <div class="panel-header">
+        <h3>分镜列表</h3>
+        <button class="icon-btn" id="btnAddScene" title="新增场景">＋</button>
+      </div>
+      <div class="scene-list" id="sceneList"></div>
+      <div class="panel-footer">
+        <button class="btn btn-block btn-outline" id="btnAIScript">AI 生成分镜</button>
+      </div>
+    </aside>
+
+    <!-- 中栏：画布编辑区 -->
+    <section class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="toolbar-group">
+          <button class="tool-btn" data-tool="select" title="选择">选择</button>
+          <button class="tool-btn" data-tool="speech" title="对话气泡">对话</button>
+          <button class="tool-btn" data-tool="narration" title="旁白框">旁白</button>
+          <button class="tool-btn" data-tool="sfx" title="拟声词">拟声</button>
+          <button class="tool-btn" data-tool="panel" title="新增分格">分格</button>
+        </div>
+        <div class="toolbar-group">
+          <span class="scene-title-input"><input type="text" id="sceneTitle" placeholder="当前场景标题"></span>
+        </div>
+        <div class="collab-presence" id="collabPresence"></div>
+      </div>
+
+      <div class="canvas-scroll" id="canvasScroll">
+        <div class="canvas-stage" id="canvasStage">
+          <div class="empty-hint" id="emptyHint">
+            <div class="empty-icon">墨</div>
+            <p>当前没有场景</p>
+            <p class="empty-tip">点击左下"AI 生成分镜"或"+"开始创作</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-statusbar">
+        <span id="statusInfo">就绪</span>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost btn-sm" id="btnPublish">发布到广场</button>
+        <button class="btn btn-ghost btn-sm" id="btnCollab">协作</button>
+        <span id="zoomInfo">100%</span>
+      </div>
+    </section>
+
+    <!-- 右栏：属性与 AI 面板 -->
+    <aside class="sidebar sidebar-right">
+      <div class="panel-tabs">
+        <button class="tab-btn active" data-tab="ai">AI 助手</button>
+        <button class="tab-btn" data-tab="props">属性</button>
+        <button class="tab-btn" data-tab="settings">设置</button>
+      </div>
+
+      <div class="tab-panel tab-ai active" id="tabAi">
+        <div class="ai-section">
+          <h4>剧本生成</h4>
+          <textarea id="storyInput" placeholder="输入故事梗概，例如：&#10;一个少女在雨夜捡到一只受伤的黑猫，带回家后发现它会说话……"></textarea>
+          <div class="ai-options">
+            <label>风格
+              <select id="storyStyle">
+                <option value="热血">热血冒险</option>
+                <option value="校园">校园青春</option>
+                <option value="悬疑">悬疑推理</option>
+                <option value="奇幻">奇幻仙侠</option>
+                <option value="日常">日常治愈</option>
+                <option value="科幻">科幻未来</option>
+              </select>
+            </label>
+            <label>格数
+              <select id="storyCount">
+                <option value="4">4 格</option>
+                <option value="6" selected>6 格</option>
+                <option value="8">8 格</option>
+                <option value="10">10 格</option>
+              </select>
+            </label>
+          </div>
+          <button class="btn btn-block btn-primary" id="btnGenScript">生成剧本</button>
+        </div>
+
+        <div class="ai-section">
+          <h4>画面生成</h4>
+          <label class="field-label">画面描述</label>
+          <textarea id="imagePrompt" placeholder="描述这一格的画面，例如：雨夜街角，少女蹲下抚摸黑猫，路灯暖黄光晕"></textarea>
+          <div class="ai-options">
+            <label>画风
+              <select id="artStyle">
+                <option value="日系动漫">日系动漫</option>
+                <option value="国风彩绘">国风彩绘</option>
+                <option value="黑白漫画">黑白漫画</option>
+                <option value="水彩治愈">水彩治愈</option>
+                <option value="赛博朋克">赛博朋克</option>
+                <option value="像素风">像素风</option>
+              </select>
+            </label>
+            <label>尺寸
+              <select id="imageSize">
+                <option value="portrait_4_3">竖 4:3</option>
+                <option value="portrait_16_9" selected>竖 16:9</option>
+                <option value="square_hd">正方形</option>
+                <option value="landscape_16_9">横 16:9</option>
+              </select>
+            </label>
+          </div>
+          <div class="ai-btn-row">
+            <button class="btn btn-primary" id="btnGenImage">生成画面</button>
+            <button class="btn btn-outline" id="btnGenAll">一键生成全部</button>
+          </div>
+          <div class="gen-progress" id="genProgress" hidden>
+            <div class="gen-progress-bar"><div class="gen-progress-fill" id="genProgressFill"></div></div>
+            <span id="genProgressText">生成中 0/0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel tab-props" id="tabProps">
+        <div class="props-empty" id="propsEmpty">未选中任何元素</div>
+        <div class="props-content" id="propsContent" hidden></div>
+      </div>
+
+      <div class="tab-panel tab-settings" id="tabSettings">
+        <div class="ai-section">
+          <h4>AI 接入设置</h4>
+          <label class="field-label">图像生成模式</label>
+          <select id="imgMode" class="full">
+            <option value="online" selected>在线 API（免密钥，开箱即用）</option>
+            <option value="custom">自定义 API Key</option>
+          </select>
+          <div id="customApiBox" hidden>
+            <label class="field-label">自定义图像 API 地址</label>
+            <input type="text" id="customApiUrl" placeholder="https://your-api/v1/generate">
+            <label class="field-label">API Key</label>
+            <input type="password" id="customApiKey" placeholder="sk-...">
+          </div>
+          <label class="field-label">文本生成（剧本）</label>
+          <select id="textMode" class="full">
+            <option value="local" selected>内置智能模板</option>
+            <option value="custom">自定义 LLM API</option>
+          </select>
+          <div id="customTextApiBox" hidden>
+            <label class="field-label">LLM API 地址</label>
+            <input type="text" id="customTextUrl" placeholder="https://api.openai.com/v1/chat/completions">
+            <label class="field-label">模型名</label>
+            <input type="text" id="customTextModel" placeholder="gpt-4o-mini">
+            <label class="field-label">API Key</label>
+            <input type="password" id="customTextKey" placeholder="sk-...">
+          </div>
+        </div>
+        <div class="ai-section">
+          <h4>画布设置</h4>
+          <label class="field-label">画布宽度</label>
+          <input type="number" id="canvasWidth" value="720" min="320" max="1200" step="20">
+          <label class="field-label">分格间距</label>
+          <input type="number" id="panelGap" value="12" min="0" max="40" step="2">
+          <label class="field-label">背景色</label>
+          <input type="color" id="bgColor" value="#fafafa">
+        </div>
+        <div class="ai-section">
+          <h4>关于</h4>
+          <p class="about-text">AI 漫剧工坊 v2.0<br>前后端分离，含用户系统、广场、点赞收藏、关注、实时协作。</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+</section>
+
+<!-- ============ 视图：个人主页 ============ -->
+<section class="view view-profile" id="view-profile" hidden>
+  <div class="profile-container" id="profileContainer"></div>
+</section>
+
+<!-- ============ 导出弹窗 ============ -->
+<div class="modal" id="exportModal" hidden>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>导出作品</h3>
+      <button class="icon-btn" id="closeExport">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="export-preview" id="exportPreview"></div>
+      <div class="export-options">
+        <button class="btn btn-primary btn-block" id="exportLongImage">导出长图 (PNG)</button>
+        <button class="btn btn-outline btn-block" id="exportPdf">导出 PDF</button>
+        <button class="btn btn-outline btn-block" id="exportJson">导出工程文件 (JSON)</button>
+        <button class="btn btn-ghost btn-block" id="copyShareLink">复制分享链接</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/ai.js"></script>
+<script src="js/uploader.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/views.js"></script>
+<script src="js/collab.js"></script>
+<script src="js/app.js"></script>
+<script>
+// PWA Service Worker 注册（生产环境 + 桌面端跳过）
+if ('serviceWorker' in navigator && location.protocol === 'https:' || (location.protocol === 'http:' && location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW 注册失败', e));
+  });
+}
+</script>
+</body>
+</html>
