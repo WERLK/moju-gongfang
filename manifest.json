@@ -1,0 +1,27 @@
+{
+  "name": "AI 漫剧工坊 · 墨与纸故事工坊",
+  "short_name": "漫剧工坊",
+  "description": "用墨与纸，讲一个故事。AI 辅助的漫画/漫剧创作平台，支持多端数据互通。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#faf6ef",
+  "theme_color": "#1a1a1a",
+  "categories": ["productivity", "graphics", "entertainment"],
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/assets/app-icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/app-icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}
